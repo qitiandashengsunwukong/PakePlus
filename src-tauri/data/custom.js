@@ -24,3 +24,33 @@ const hookClick = (e) => {
 }
 
 document.addEventListener('click', hookClick, { capture: true })
+
+// css filter
+document.addEventListener('DOMContentLoaded', () => {
+    const targetNode = document.body
+    // 配置观察选项
+    const config = {
+        childList: true,
+        subtree: true,
+    }
+    const observer = new MutationObserver((mutationsList, observer) => {
+        for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                const element0 = document.querySelector('#platform > div > div.platform-ui-service-header-container.mweb-titlebar-logo-container > div.header-right');
+                if (element0) {
+                    element0.style.display = 'none';
+                };const element1 = document.querySelector('
+#platform > div > div.container-o04Qvp.mvweb-layout-sider-container > div.side-menu-OVQnao.mweb-side-menu-container.visible-MBg7Yj > div.menuWrapper-bPZ0SU > div:nth-child(2)');
+                if (element1) {
+                    element1.style.display = 'none';
+                };const element2 = document.querySelector('
+#Activity > div > span > div > svg');
+                if (element2) {
+                    element2.style.display = 'none';
+                }
+            }
+        }
+    })
+    observer.observe(targetNode, config)
+})
+// end css filter
