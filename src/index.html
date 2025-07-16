@@ -1,22 +1,1675 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<html lang="zh-CN">
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海塘工程自动化监测平台</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.5.0/mermaid.min.js"></script>
+    <!-- 高德地图API -->
+    <script src="https://webapi.amap.com/maps?v=2.0&key=71e589aa8247667a69da4026637bde4d"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f5f7fa;
+            color: #2d3748;
+        }
 
-            <form class="row" id="greet-form">
-                <input id="greet-input" placeholder="Enter a name..." />
-                <button type="submit">Greet</button>
-            </form>
-            <p id="greet-msg"></p>
-        </main>
-    </body>
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .chart-container {
+            height: 320px;
+            width: 100%;
+        }
+
+        .warning-level-1 {
+            background-color: #fef08a;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .warning-level-2 {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .sensor-card {
+            transition: all 0.3s ease;
+        }
+
+        .sensor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .mobile-menu.active {
+            max-height: 500px;
+        }
+
+        /* 新增渐变文字样式 */
+        .gradient-text {
+            background: linear-gradient(135deg, #0a4da2 0%, #2563eb 50%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -moz-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+            background-size: 200% auto;
+            animation: gradient-shimmer 3s ease infinite;
+        }
+
+        @keyframes gradient-shimmer {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .hover-float {
+            transition: transform 0.3s ease;
+        }
+
+        .hover-float:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <style type="text/tailwindcss">
+        @layer utilities {
+                .content-auto {
+                    content-visibility: auto;
+                }
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+                .glassmorphism {
+                    background: rgba(255, 255, 255, 0.7);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+                }
+                .animate-pulse-slow {
+                    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                }
+                /* ... 其他现有工具类 ... */
+            }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-blue-800 text-white sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-water text-2xl mr-2"></i>
+                <span class="text-xl font-bold">海塘工程自动化监测平台</span>
+            </div>
+
+            <div class="hidden md:flex space-x-8">
+                <a href="#home" class="nav-link">首页</a>
+                <a href="#overview" class="nav-link">系统概述</a>
+                <a href="#tech" class="nav-link">技术参数</a>
+                <a href="#monitor" class="nav-link">实时监测</a>
+                <a href="#warning" class="nav-link">预警中心</a>
+                <a href="#cases" class="nav-link">应用案例</a>
+                <a href="#about" class="nav-link">关于我们</a>
+            </div>
+
+            <button id="mobileMenuButton" class="md:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="mobile-menu bg-blue-700 md:hidden">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-2">
+                <a href="#home" class="py-2 px-4 rounded hover:bg-blue-600">首页</a>
+                <a href="#overview" class="py-2 px-4 rounded hover:bg-blue-600">系统概述</a>
+                <a href="#tech" class="py-2 px-4 rounded hover:bg-blue-600">技术参数</a>
+                <a href="#monitor" class="py-2 px-4 rounded hover:bg-blue-600">实时监测</a>
+                <a href="#warning" class="py-2 px-4 rounded hover:bg-blue-600">预警中心</a>
+                <a href="#cases" class="py-2 px-4 rounded hover:bg-blue-600">应用案例</a>
+                <a href="#about" class="py-2 px-4 rounded hover:bg-blue-600">关于我们</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 首页 -->
+    <section id="home" class="py-16 bg-gradient-to-b from-blue-50 to-white">
+        <div class="container mx-auto px-4">
+            <div class="glassmorphism p-8 text-center max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6 text-blue-800 gradient-text">深厚软基条件海塘工程自动化监测平台</h1>
+                <p class="text-xl text-gray-600 mb-8">基于物联网技术的高精度实时监测与预警系统</p>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <div class="text-blue-600 text-2xl mb-2"><i class="fas fa-chart-line"></i></div>
+                        <a href="#monitor" class="font-semibold">实时监测</a>
+                        <div class="text-gray-500 text-sm">24/7不间断数据采集</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <div class="text-blue-600 text-2xl mb-2"><i class="fas fa-bell"></i></div>
+                        <a href="#warning" class="font-semibold">智能预警</a>
+                        <div class="text-gray-500 text-sm">三级预警机制</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <div class="text-blue-600 text-2xl mb-2"><i class="fas fa-database"></i></div>
+                        <a href="#monitor" class="font-semibold">数据分析</a>
+                        <div class="text-gray-500 text-sm">历史数据追溯</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <div class="text-blue-600 text-2xl mb-2"><i class="fas fa-map-marked-alt"></i></div>
+                        <a href="#cases" class="font-semibold">GIS展示</a>
+                        <div class="text-gray-500 text-sm">空间可视化分析</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 系统概述 -->
+    <section id="overview" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-blue-800">系统概述</h2>
+
+            <div class="glassmorphism p-8 mb-12">
+                <h3 class="text-2xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 mr-2"></i> 系统简介
+                </h3>
+                <p class="text-gray-700 mb-6">
+                    本系统是针对深厚软基条件下海塘工程设计的自动化监测平台，通过集成物联网、大数据和GIS技术，实现对海塘变形、渗流、环境等多维参数的实时监测与智能预警，为海塘安全运行提供科学决策支持。
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-xl font-semibold mb-3 text-blue-700">系统特点</h4>
+                        <ul class="space-y-2">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>多参数同步监测：变形、渗流、振动、环境量等</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>无线传输设计，节省80%布线成本</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>分级声光报警机制，秒级响应</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>云端数据存储与分析，支持趋势预测</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-semibold mb-3 text-blue-700">技术优势</h4>
+                        <ul class="space-y-2">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>高精度传感器：位移±0.1mm，倾角±0.05°</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>5年长效电池，低待机功耗25μA</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>IP68防水防尘，-40℃~85℃工作温度</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>支持4G/5G/LoRa多种通信方式</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glassmorphism p-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-sitemap text-blue-600 mr-2"></i> 系统架构
+                </h3>
+
+                <div class="mermaid mx-auto flex justify-center">
+                    graph TD
+                    subgraph 感知层
+                    A1[变形监测] --> A11[沉降]
+                    A1 --> A12[位移]
+                    A1 --> A13[裂缝]
+                    A2[渗流监测] --> A21[渗压计]
+                    A3[环境监测] --> A31[水位]
+                    A3 --> A32[雨量]
+                    A3 --> A33[温度]
+                    end
+                </div>
+            </div>
+    </section>
+
+    <!-- 技术参数 -->
+    <section id="tech" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-blue-800">技术参数</h2>
+
+            <div class="glassmorphism p-8 mb-12">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-microchip text-blue-600 mr-2"></i> 传感器技术参数
+                </h3>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-blue-600 text-white">
+                            <tr>
+                                <th class="py-3 px-4 text-left">传感器型号</th>
+                                <th class="py-3 px-4 text-left">监测参数</th>
+                                <th class="py-3 px-4 text-left">测量精度</th>
+                                <th class="py-3 px-4 text-left">工作环境</th>
+                                <th class="py-3 px-4 text-left">报警功能</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="py-3 px-4">QY-18DL</td>
+                                <td class="py-3 px-4">X/Y/Z三轴加速度、倾角、位移</td>
+                                <td class="py-3 px-4">位移±0.12mm，倾角±0.05°</td>
+                                <td class="py-3 px-4">-40℃~85℃，0~95%RH</td>
+                                <td class="py-3 px-4">分级声光报警</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4">VB25H</td>
+                                <td class="py-3 px-4">声纹、3轴振动、温度、转频</td>
+                                <td class="py-3 px-4">Z轴振动±50g，20KHz采样率</td>
+                                <td class="py-3 px-4">IP68防水，-40℃~85℃</td>
+                                <td class="py-3 px-4">超标秒级报警</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4">POM-HDG20Z</td>
+                                <td class="py-3 px-4">裂缝开合度</td>
+                                <td class="py-3 px-4">±0.25%~±0.5%</td>
+                                <td class="py-3 px-4">-25℃~+175℃</td>
+                                <td class="py-3 px-4">阈值报警</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4">9500</td>
+                                <td class="py-3 px-4">渗透压力</td>
+                                <td class="py-3 px-4">≤20mm，非线性度≤0.5%FS</td>
+                                <td class="py-3 px-4">-20℃~+60℃</td>
+                                <td class="py-3 px-4">超限报警</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <!-- 新增通信方式占比饼图 -->
+                <div class="glassmorphism p-8 mt-8">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-green-100 p-2 rounded-full mr-3">
+                            <i class="fas fa-wifi text-green-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">5G/LoRa混合通信</h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h4 class="text-xl font-semibold mb-4 text-center">通信方式占比</h4>
+                        <div class="flex justify-center">
+                            <div class="w-64 h-64">
+                                <canvas id="communicationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glassmorphism p-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-tachometer-alt text-blue-600 mr-2"></i> 监测指标与报警值
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-xl font-semibold mb-3 text-blue-700">施工期</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between">
+                                <span>日沉降量</span>
+                                <span class="font-bold">10 mm/d</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>测斜量</span>
+                                <span class="font-bold">5 mm/d</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>水平位移</span>
+                                <span class="font-bold">>50mm或连续3日>3mm/d</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-semibold mb-3 text-blue-700">运行期</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between">
+                                <span>沉降量</span>
+                                <span class="font-bold">2 mm/d</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>水平位移</span>
+                                <span class="font-bold">1 mm/d</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <div class="chart-container">
+                        <canvas id="techChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 实时监测 -->
+    <section id="monitor" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-blue-800">实时监测</h2>
+
+            <div class="glassmorphism p-8 mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold flex items-center">
+                        <i class="fas fa-chart-bar text-blue-600 mr-2"></i> 监测数据仪表盘
+                    </h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm">日数据</button>
+                        <button class="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm">周数据</button>
+                        <button class="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm">月数据</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="sensor-card bg-white p-4 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-gray-600">沉降监测</div>
+                            <div class="text-green-500 font-bold">正常</div>
+                        </div>
+                        <div class="text-3xl font-bold mb-2">3.2 <span class="text-sm text-gray-500">mm</span></div>
+                        <div class="h-40">
+                            <canvas id="settlementChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="sensor-card bg-white p-4 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-gray-600">水平位移</div>
+                            <div class="text-yellow-500 font-bold">预警</div>
+                        </div>
+                        <div class="text-3xl font-bold mb-2">4.8 <span class="text-sm text-gray-500">mm</span></div>
+                        <div class="h-40">
+                            <canvas id="displacementChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="sensor-card bg-white p-4 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="text-gray-600">渗流压力</div>
+                            <div class="text-green-500 font-bold">正常</div>
+                        </div>
+                        <div class="text-3xl font-bold mb-2">0.15 <span class="text-sm text-gray-500">MPa</span></div>
+                        <div class="h-40">
+                            <canvas id="seepageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h4 class="text-lg font-semibold mb-3">环境监测</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-gray-500 text-sm">水位</div>
+                                <div class="text-xl font-bold env-water-level">2.45 <span class="text-sm">m</span></div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-gray-500 text-sm">雨量</div>
+                                <div class="text-xl font-bold env-rainfall">15.2 <span class="text-sm">mm</span></div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-gray-500 text-sm">温度</div>
+                                <div class="text-xl font-bold env-temperature">24.5 <span class="text-sm">℃</span></div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="text-gray-500 text-sm">风速</div>
+                                <div class="text-xl font-bold env-wind-speed">3.2 <span class="text-sm">m/s</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 新增水位监测趋势模块 -->
+                    <div class="glassmorphism p-6 mt-6">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-tint text-blue-500 mr-2"></i> 水位监测趋势
+                        </h3>
+                        <div class="mb-4">
+                            <div class="inline-flex rounded-md shadow">
+                                <button id="todayBtn" class="px-4 py-2 bg-blue-600 text-white rounded-l-md">今日</button>
+                                <button id="weekBtn" class="px-4 py-2 bg-gray-200 text-gray-700">本周</button>
+                                <button id="monthBtn"
+                                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-r-md">本月</button>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <div class="h-64">
+                                <canvas id="waterLevelChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 水位监测趋势模块结束 -->
+
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h4 class="text-lg font-semibold mb-3">传感器状态</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                    <span>QY-18DL-001</span>
+                                </div>
+                                <span class="text-sm text-gray-500">在线</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                    <span>VB25H-002</span>
+                                </div>
+                                <span class="text-sm text-gray-500">在线</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                                    <span>POM-HDG20Z-003</span>
+                                </div>
+                                <span class="text-sm text-gray-500">低电量</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                    <span>9500-004</span>
+                                </div>
+                                <span class="text-sm text-gray-500">离线</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glassmorphism p-8 mt-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-history text-blue-600 mr-2"></i> 历史数据查询
+                </h3>
+
+                <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div class="mb-4 md:mb-0">
+                        <label class="block text-gray-700 mb-1">时间范围</label>
+                        <div class="flex space-x-2">
+                            <select class="border rounded px-3 py-1">
+                                <option>2025年</option>
+                                <option>2024年</option>
+                                <option>2023年</option>
+                            </select>
+                            <select class="border rounded px-3 py-1">
+                                <option>全部月份</option>
+                                <option>1月</option>
+                                <option>2月</option>
+                                <!-- 其他月份 -->
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">监测参数</label>
+                        <select id="historyParamSelect" class="border rounded px-3 py-1 w-full md:w-48">
+                            <option value="settlement">沉降量</option>
+                            <option value="displacement">水平位移</option>
+                            <option value="seepage">渗流压力</option>
+                            <option value="waterLevel">水位</option>
+                            <option value="rainfall">雨量</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <div class="h-80">
+                        <canvas id="historyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-end">
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded flex items-center">
+                        <i class="fas fa-download mr-2"></i> 导出Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 预警中心 -->
+    <section id="warning" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-blue-800">预警中心</h2>
+
+            <div class="glassmorphism p-8 mb-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-exclamation-triangle text-blue-600 mr-2"></i> 预警信息
+                </h3>
+
+
+                <div class="space-y-4 h-80 overflow-y-auto pr-4 scrollbar-hide">
+                    <div class="warning-level-2 p-4 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div class="font-semibold">水平位移超限 - 测点D-12</div>
+                            <div class="text-red-600 font-bold">二级报警</div>
+                        </div>
+                        <div class="text-sm text-gray-700 mt-1">当前值: 5.2mm/d (阈值: 5mm/d)</div>
+                        <div class="text-xs text-gray-500 mt-2">2024-06-15 14:23:45</div>
+                    </div>
+
+                    <div class="warning-level-1 p-4 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div class="font-semibold">渗流压力异常 - 测点S-08</div>
+                            <div class="text-yellow-600 font-bold">一级预警</div>
+                        </div>
+                        <div class="text-sm text-gray-700 mt-1">当前值: 0.18MPa (阈值: 0.15MPa)</div>
+                        <div class="text-xs text-gray-500 mt-2">2024-06-15 10:12:33</div>
+                    </div>
+
+                    <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                        <div class="flex justify-between items-center">
+                            <div class="font-semibold">沉降监测 - 测点C-05</div>
+                            <div class="text-green-600 font-bold">已处理</div>
+                        </div>
+                        <div class="text-sm text-gray-700 mt-1">沉降速率已恢复正常</div>
+                        <div class="text-xs text-gray-500 mt-2">2024-06-14 16:45:21</div>
+                    </div>
+
+                    <div class="warning-level-1 p-4 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div class="font-semibold">水位异常升高 - 测点W-03</div>
+                            <div class="text-yellow-600 font-bold">一级预警</div>
+                        </div>
+                        <div class="text-sm text-gray-700 mt-1">当前值: 2.45m (阈值: 2.5m)</div>
+                        <div class="text-xs text-gray-500 mt-2">2024-06-15 16:30:18</div>
+                    </div>
+
+                    <div class="warning-level-2 p-4 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div class="font-semibold">风速超标 - 测点WS-01</div>
+                            <div class="text-red-600 font-bold">二级报警</div>
+                        </div>
+                        <div class="text-sm text-gray-700 mt-1">当前值: 12.8m/s (阈值: 10m/s)</div>
+                        <div class="text-xs text-gray-500 mt-2">2024-06-15 15:45:02</div>
+                    </div>
+                </div>
+
+
+                <div class="mt-6">
+                    <button id="simulateAlarm"
+                        class="bg-blue-600 text-white px-4 py-2 rounded flex items-center mx-auto">
+                        <i class="fas fa-bell mr-2"></i> 模拟报警触发
+                    </button>
+                </div>
+            </div>
+
+            <div class="glassmorphism p-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-cog text-blue-600 mr-2"></i> 预警设置
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h4 class="text-lg font-semibold mb-3">沉降监测</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">一级预警</label>
+                                <input type="number" class="border rounded px-3 py-1 w-full" value="8">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">二级报警</label>
+                                <input type="number" class="border rounded px-3 py-1 w-full" value="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h4 class="text-lg font-semibold mb-3">水平位移</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">一级预警</label>
+                                <input type="number" class="border rounded px-3 py-1 w-full" value="4">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">二级报警</label>
+                                <input type="number" class="border rounded px-3 py-1 w-full" value="5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h4 class="text-lg font-semibold mb-3">渗流压力</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">一级预警</label>
+                                <input type="number" class="border rounded px-3 py-1 w-full" value="0.15">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">二级报警</label>
+                                <input type="number" class="border rounded px-3 py-1 w-full" value="0.20">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded mr-2">保存设置</button>
+                    <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded">恢复默认</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 应用案例 -->
+    <section id="cases" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-blue-800">应用案例</h2>
+
+            <div class="glassmorphism p-8 mb-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-map-marked-alt text-blue-600 mr-2"></i> 项目分布
+                </h3>
+
+                <div class="bg-white p-4 rounded-lg shadow h-96">
+                    <!-- 高德地图容器 -->
+                    <div id="mapContainer" class="w-full h-full rounded"></div>
+                    <script>
+                        // 初始化高德地图
+                        window.onload = function () {
+                            // 温州鹿城坐标（地图中心点）
+                            const wenzhouCenter = [120.65, 28.01];
+                            const map = new AMap.Map('mapContainer', {
+                                zoom: 10,
+                                center: wenzhouCenter,
+                                viewMode: '3D',
+                                mapStyle: 'amap://styles/light'
+                            });
+
+                            // 添加项目标记点（完整数组）
+                            const projects = [
+                                { name: '温州鹿城项目', position: [120.65, 28.01] },
+                                { name: '临海杜桥项目', position: [121.23, 28.80] },
+                                { name: '宁波象山项目', position: [121.80, 29.48] },
+                                { name: '舟山定海项目', position: [122.11, 30.01] }
+                            ];
+
+                            // 添加标记点到地图
+                            projects.forEach(project => {
+                                const marker = new AMap.Marker({
+                                    position: project.position,
+                                    title: project.name,
+                                    icon: new AMap.Icon({
+                                        size: new AMap.Size(32, 32),
+                                        image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png',
+                                        imageSize: new AMap.Size(32, 32)
+                                    })
+                                });
+                                marker.setMap(map);
+
+                                // 添加点击弹窗
+                                marker.on('click', function () {
+                                    infoWindow.open(map, marker.getPosition());
+                                });
+                            });
+
+                            // 创建信息窗口
+                            const infoWindow = new AMap.InfoWindow({
+                                isCustom: true,
+                                content: '<div class="p-2"><h3 class="font-bold text-lg"></h3><p class="text-sm">点击查看项目详情</p></div>',
+                                offset: new AMap.Pixel(0, -30)
+                            });
+                        };
+                    </script>
+                </div>
+            </div>
+
+            <div class="glassmorphism p-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-building text-blue-600 mr-2"></i> 典型案例
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <h4 class="text-xl font-semibold mb-2 text-blue-700">临海市海塘安澜工程</h4>
+                        <div class="text-gray-600 text-sm mb-3">杜桥、上盘片一期</div>
+                        <div class="text-gray-700 mb-3">
+                            总投资4.8528亿元，提标加固海堤2.7公里，新建海堤0.3公里，防潮标准提升至100年一遇，保护农田约21.1万亩及人口约37.72万人。
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">沉降监测</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">渗流监测</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">自动化系统</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <h4 class="text-xl font-semibold mb-2 text-blue-700">温州市鹿城区七都海塘</h4>
+                        <div class="text-gray-600 text-sm mb-3">数字化改造项目</div>
+                        <div class="text-gray-700 mb-3">
+                            集成沉降、位移等自动化监测信息，构建"水利全域数字化管护系统"，累计报警提醒643次，荣获浙江省水利厅争先创优优秀案例。
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">数字化</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">智能预警</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">GIS展示</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <h4 class="text-xl font-semibold mb-2 text-blue-700">海宁百里钱塘综合整治</h4>
+                        <div class="text-gray-600 text-sm mb-3">盐仓段一期工程</div>
+                        <div class="text-gray-700 mb-3">
+                            7.09公里海塘提标加固至300年一遇标准，配套数字化海塘建设，开展沿海深厚软基堤防不均匀沉降控制技术研究。
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">高标准</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">科研创新</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">数字化</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <h4 class="text-xl font-semibold mb-2 text-blue-700">瑞安市南滨江景观带</h4>
+                        <div class="text-gray-600 text-sm mb-3">一期工程</div>
+                        <div class="text-gray-700 mb-3">
+                            全长2.458公里，设计防潮标准50年一遇，打造海塘智慧管理系统，实现对水情、流量、视频、潮位、水质的自动化监测。
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">景观融合</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">智慧管理</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">多参数监测</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 新增甘特图组件 -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="glassmorphism p-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-chart-line text-blue-600 mr-2"></i> 武汉阿里巴巴项目监测周期
+                </h3>
+                <div class="mermaid mx-auto">
+                    gantt
+                    dateFormat YYYY-MM-DD
+                    title 武汉阿里巴巴项目监测周期
+                    axisFormat %Y-%m-%d
+
+                    section 基坑施工
+                    土方开挖 :a1, 2024-03-01, 30d
+                    支护施工 :a2, 2024-04-01, 45d
+                    主体施工 :a3, 2024-05-15, 75d
+
+                    section 监测实施
+                    传感器安装 :b1, 2024-03-15, 15d
+                    AI模型训练 :b2, 2024-04-15, 30d
+                    实时监测 :b3, 2024-05-01, 120d
+                    预警系统运行 :b4, 2024-06-15, 75d
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 报警模拟弹出框 -->
+    <div id="alarmModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300">
+        <div class="glassmorphism w-full max-w-md mx-4 rounded-xl p-6 transform transition-all duration-300 scale-95 opacity-0"
+            id="modalContent">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-2xl font-bold text-red-600 flex items-center">
+                    <i class="fas fa-exclamation-circle animate-pulse mr-2"></i> 模拟报警触发
+                </h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-gray-700 mb-2">报警类型</label>
+                    <select id="alarmType"
+                        class="w-full p-2 border border-gray-300 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="displacement">水平位移超限</option>
+                        <option value="seepage">渗流压力异常</option>
+                        <option value="waterlevel">水位异常升高</option>
+                        <option value="wind">风速超标</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-2">测点编号</label>
+                    <input type="text" id="sensorId"
+                        class="w-full p-2 border border-gray-300 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value="D-12">
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-2">当前值</label>
+                    <input type="text" id="currentValue"
+                        class="w-full p-2 border border-gray-300 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value="5.2mm/d">
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 mb-2">阈值</label>
+                    <input type="text" id="thresholdValue"
+                        class="w-full p-2 border border-gray-300 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value="5mm/d">
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button id="cancelAlarm"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">取消</button>
+                <button id="confirmAlarm"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center">
+                    <i class="fas fa-bell mr-2"></i> 触发报警
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- 弹出框结束 -->
+
+    <!-- 关于我们 -->
+    <section id="about" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center text-blue-800">关于我们</h2>
+
+            <div class="glassmorphism p-8 mb-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 mr-2"></i> 简介
+                </h3>
+
+                <div class="grid grid-cols-1 gap-8">
+                    <div>
+                        <p class="text-gray-700 mb-4">
+                            我们是一家专注于水利工程自动化监测技术研发与应用的科研院所，致力于为海塘、堤防等水利工程提供智能化监测解决方案。
+                        </p>
+                        <p class="text-gray-700 mb-4">
+                            拥有多项自主知识产权，研发团队由水利工程、物联网、大数据等领域的专家组成，具备丰富的工程实践经验。
+                        </p>
+                        <p class="text-gray-700">
+                            我们的使命是通过技术创新提升水利工程安全管理水平，为"数字水利"建设贡献力量。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glassmorphism p-8">
+                <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-address-card text-blue-600 mr-2"></i> 联系我们
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow hover-float cursor-pointer"
+                        onclick="window.location.href='王天成论文信息卡.html'">
+                        <div class="text-blue-600 text-2xl mb-2"><i class="fas fa-map-marker-alt"></i></div>
+                        <h4 class="font-semibold mb-1">王天成</h4>
+                        <p class="text-gray-700">长江水利委员会长江科学院</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <div class="text-blue-600 text-2xl mb-2"><i class="fas fa-phone"></i></div>
+                        <h4 class="font-semibold mb-1">电话</h4>
+                        <p class="text-gray-700">15578094345</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow hover-float">
+                        <div class="text-blue-600 text-2xl mb-2"><i class="fas fa-envelope"></i></div>
+                        <h4 class="font-semibold mb-1">邮箱</h4>
+                        <p class="text-gray-700">522350951@qq.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-blue-900 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <i class="fas fa-water text-2xl mr-2"></i>
+                        <span class="text-xl font-bold">海塘工程自动化监测平台</span>
+                    </div>
+                    <p class="text-sm text-blue-200 mt-2">为海塘安全保驾护航</p>
+                </div>
+
+                <div class="flex space-x-6">
+                    <a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-weixin text-xl"></i></a>
+                    <a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-weibo text-xl"></i></a>
+                    <a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-linkedin text-xl"></i></a>
+                </div>
+            </div>
+
+            <div class="border-t border-blue-800 mt-6 pt-6 text-sm text-blue-200">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-2 md:mb-0">
+                        <span>© 2025 海塘工程自动化监测平台 版权所有</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 初始化Mermaid图表
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+
+        // 移动端菜单切换
+        const menuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuButton.addEventListener('click', function () {
+            mobileMenu.classList.toggle('active');
+            const icon = this.querySelector('i');
+            if (mobileMenu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+
+                    // 关闭移动端菜单
+                    if (mobileMenu.classList.contains('active')) {
+                        mobileMenu.classList.remove('active');
+                        menuButton.querySelector('i').classList.remove('fa-times');
+                        menuButton.querySelector('i').classList.add('fa-bars');
+                    }
+                }
+            });
+        });
+
+        const communicationCtx = document.getElementById('communicationChart').getContext('2d');
+        new Chart(communicationCtx, {
+            type: 'pie',
+            data: {
+                labels: ['5G通信', 'LoRa远传', '有线传输', '其他'],
+                datasets: [{
+                    data: [45, 35, 15, 5],
+                    backgroundColor: [
+                        '#e0f2fe',  // 浅蓝
+                        '#fef3c7',  // 浅黄
+                        '#dcfce7',  // 浅绿
+                        '#e0e7ff'   // 淡紫
+                    ],
+                    borderColor: [
+                        '#3b82f6',  // 蓝色
+                        '#f59e0b',  // 黄色
+                        '#10b981',  // 绿色
+                        '#6366f1'   // 紫色
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+
+        // 数据生成工具函数
+        const DataGenerator = {
+            // 生成时间标签
+            generateLabels(period) {
+                const labels = [];
+                switch (period) {
+                    case 'day':
+                        for (let i = 0; i < 24; i += 4) {
+                            labels.push(`${i}:00`);
+                        }
+                        break;
+                    case 'week':
+                        const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                        labels.push(...weekdays);
+                        break;
+                    case 'month':
+                        for (let i = 1; i <= 30; i += 7) {
+                            labels.push(`第${Math.floor(i / 7) + 1}周`);
+                        }
+                        break;
+                    case 'halfyear':
+                        for (let i = 1; i <= 6; i++) {
+                            labels.push(`${i}月`);
+                        }
+                        break;
+                }
+                return labels;
+            },
+
+            // 生成监测数据
+            generateSensorData(period, type) {
+                const baseValue = {
+                    settlement: 3,      // 沉降基准值(mm)
+                    displacement: 4,    // 位移基准值(mm)
+                    seepage: 0.14,      // 渗流基准值(MPa)
+                    waterLevel: 2.4,    // 水位基准值(m)
+                    rainfall: 15,       // 雨量基准值(mm)
+                    temperature: 24,    // 温度基准值(℃)
+                    windSpeed: 3        // 风速基准值(m/s)
+                };
+
+                const fluctuation = {
+                    settlement: 0.5,
+                    displacement: 0.8,
+                    seepage: 0.03,
+                    waterLevel: 0.2,
+                    rainfall: 8,
+                    temperature: 3,
+                    windSpeed: 1.5
+                };
+
+                const count = {
+                    day: 6,    // 每天6个数据点(4小时一次)
+                    week: 7,   // 每周7个数据点(每天一次)
+                    month: 4,  // 每月4个数据点(每周一次)
+                    halfyear: 6 // 半年6个数据点(每月一次)
+                }[period];
+
+                return Array.from({ length: count }, () => {
+                    const value = baseValue[type] + (Math.random() - 0.5) * 2 * fluctuation[type];
+                    return parseFloat(value.toFixed(2));
+                });
+            },
+
+            // 生成环境监测数据
+            generateEnvData(period) {
+                return {
+                    waterLevel: this.generateSensorData(period, 'waterLevel')[this.generateSensorData(period, 'waterLevel').length - 1],
+                    rainfall: this.generateSensorData(period, 'rainfall')[this.generateSensorData(period, 'rainfall').length - 1],
+                    temperature: this.generateSensorData(period, 'temperature')[this.generateSensorData(period, 'temperature').length - 1],
+                    windSpeed: this.generateSensorData(period, 'windSpeed')[this.generateSensorData(period, 'windSpeed').length - 1]
+                };
+            }
+        };
+
+        // 图表管理类
+        class ChartManager {
+            constructor() {
+                this.charts = {};
+                this.initAllCharts();
+                this.bindEvents();
+            }
+
+            // 初始化所有图表
+            initAllCharts() {
+                // 技术参数图表
+                this.charts.tech = this.initTechChart();
+
+                // 实时监测图表
+                this.charts.settlement = this.initRealtimeChart('settlementChart', '沉降量 (mm)', 'rgba(59, 130, 246, 1)', 'day');
+                this.charts.displacement = this.initRealtimeChart('displacementChart', '水平位移 (mm)', 'rgba(245, 158, 11, 1)', 'day');
+                this.charts.seepage = this.initRealtimeChart('seepageChart', '渗流压力 (MPa)', 'rgba(16, 185, 129, 1)', 'day');
+
+                // 水位趋势图表
+                this.charts.waterLevel = this.initWaterLevelChart();
+
+                // 历史数据图表
+                this.charts.history = this.initHistoryChart('settlement');
+            }
+
+            // 初始化技术参数图表
+            initTechChart() {
+                const ctx = document.getElementById('techChart').getContext('2d');
+                return new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['施工期日沉降量', '施工期测斜量', '施工期水平位移', '运行期沉降量', '运行期水平位移'],
+                        datasets: [{
+                            label: '报警值 (mm/d)',
+                            data: [10, 5, 50, 2, 1],
+                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: this.getChartOptions('报警值 (mm/d)')
+                });
+            }
+
+            // 初始化实时监测图表
+            initRealtimeChart(elementId, label, color, period) {
+                const ctx = document.getElementById(elementId).getContext('2d');
+                const type = elementId.replace('Chart', '');
+
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: DataGenerator.generateLabels(period),
+                        datasets: [{
+                            label: label,
+                            data: DataGenerator.generateSensorData(period, type),
+                            borderColor: color,
+                            backgroundColor: `${color.replace('1)', '0.1)')}`,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: this.getRealtimeChartOptions(label)
+                });
+            }
+
+            // 初始化水位趋势图表
+            initWaterLevelChart() {
+                const ctx = document.getElementById('waterLevelChart').getContext('2d');
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: DataGenerator.generateLabels('today'),
+                        datasets: [{
+                            label: '实时水位 (m)',
+                            data: DataGenerator.generateSensorData('day', 'waterLevel'),
+                            borderColor: '#1E88E5',
+                            backgroundColor: 'rgba(30, 136, 229, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: '警戒水位 (m)',
+                            data: Array(DataGenerator.generateLabels('today').length).fill(2.5),
+                            borderColor: '#FF5722',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false
+                        }]
+                    },
+                    options: this.getWaterLevelChartOptions()
+                });
+            }
+
+            // 初始化历史数据图表
+            initHistoryChart(param) {
+                const ctx = document.getElementById('historyChart').getContext('2d');
+                const params = {
+                    settlement: {
+                        label: '沉降量 (mm)',
+                        color: 'rgba(59, 130, 246, 1)',
+                        data: DataGenerator.generateSensorData('halfyear', 'settlement')
+                    },
+                    displacement: {
+                        label: '水平位移 (mm)',
+                        color: 'rgba(245, 158, 11, 1)',
+                        data: DataGenerator.generateSensorData('halfyear', 'displacement')
+                    },
+                    seepage: {
+                        label: '渗流压力 (MPa)',
+                        color: 'rgba(16, 185, 129, 1)',
+                        data: DataGenerator.generateSensorData('halfyear', 'seepage')
+                    },
+                    waterLevel: {
+                        label: '水位 (m)',
+                        color: 'rgba(34, 197, 94, 1)',
+                        data: DataGenerator.generateSensorData('halfyear', 'waterLevel')
+                    },
+                    rainfall: {
+                        label: '雨量 (mm)',
+                        color: 'rgba(168, 85, 247, 1)',
+                        data: DataGenerator.generateSensorData('halfyear', 'rainfall')
+                    }
+                };
+
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: DataGenerator.generateLabels('halfyear'),
+                        datasets: [{
+                            label: params[param].label,
+                            data: params[param].data,
+                            borderColor: params[param].color,
+                            backgroundColor: `${params[param].color.replace('1)', '0.1)')}`,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: this.getHistoryChartOptions()
+                });
+            }
+
+
+
+            // 更新实时监测图表
+            updateRealtimeCharts(period) {
+                const chartConfig = {
+                    settlement: {
+                        element: 'settlementChart',
+                        label: '沉降量 (mm)',
+                        color: 'rgba(59, 130, 246, 1)',
+                        type: 'settlement'
+                    },
+                    displacement: {
+                        element: 'displacementChart',
+                        label: '水平位移 (mm)',
+                        color: 'rgba(245, 158, 11, 1)',
+                        type: 'displacement'
+                    },
+                    seepage: {
+                        element: 'seepageChart',
+                        label: '渗流压力 (MPa)',
+                        color: 'rgba(16, 185, 129, 1)',
+                        type: 'seepage'
+                    }
+                };
+
+                Object.values(chartConfig).forEach(config => {
+                    this.charts[config.type].data.labels = DataGenerator.generateLabels(period);
+                    this.charts[config.type].data.datasets[0].data = DataGenerator.generateSensorData(period, config.type);
+                    this.charts[config.type].update();
+                });
+
+                // 更新环境监测数据
+                this.updateEnvData(period);
+            }
+
+            // 更新环境监测数据
+            updateEnvData(period) {
+                const envData = DataGenerator.generateEnvData(period);
+
+                // 更新DOM元素
+                document.querySelector('.env-water-level').innerHTML = `${envData.waterLevel} <span class="text-sm">m</span>`;
+                document.querySelector('.env-rainfall').innerHTML = `${envData.rainfall} <span class="text-sm">mm</span>`;
+                document.querySelector('.env-temperature').innerHTML = `${envData.temperature} <span class="text-sm">℃</span>`;
+                document.querySelector('.env-wind-speed').innerHTML = `${envData.windSpeed} <span class="text-sm">m/s</span>`;
+            }
+
+            // 更新历史数据图表
+            updateHistoryChart(param) {
+                const params = {
+                    settlement: { label: '沉降量 (mm)', color: 'rgba(59, 130, 246, 1)', type: 'settlement' },
+                    displacement: { label: '水平位移 (mm)', color: 'rgba(245, 158, 11, 1)', type: 'displacement' },
+                    seepage: { label: '渗流压力 (MPa)', color: 'rgba(16, 185, 129, 1)', type: 'seepage' },
+                    waterLevel: { label: '水位 (m)', color: 'rgba(34, 197, 94, 1)', type: 'waterLevel' },
+                    rainfall: { label: '雨量 (mm)', color: 'rgba(168, 85, 247, 1)', type: 'rainfall' }
+                };
+
+                const config = params[param];
+                this.charts.history.data.datasets[0].label = config.label;
+                this.charts.history.data.datasets[0].borderColor = config.color;
+                this.charts.history.data.datasets[0].backgroundColor = `${config.color.replace('1)', '0.1)')}`;
+                this.charts.history.data.datasets[0].data = DataGenerator.generateSensorData('halfyear', config.type);
+                this.charts.history.update();
+            }
+
+            // 图表配置选项
+            getChartOptions(yLabel) {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: yLabel } }
+                    }
+                };
+            }
+
+            getRealtimeChartOptions(yLabel) {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: false, min: this.getMinValue(yLabel) },
+                        x: { grid: { display: false } }
+                    }
+                };
+            }
+
+            getWaterLevelChartOptions() {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: '水位 (m)' } },
+                        x: { title: { display: true, text: '时间' } }
+                    },
+                    plugins: { tooltip: { mode: 'index', intersect: false } }
+                };
+            }
+
+            getHistoryChartOptions() {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { title: { display: true, text: '2025年上半年监测数据趋势' } },
+                    scales: { y: { beginAtZero: false } }
+                };
+            }
+
+            getMinValue(label) {
+                const minValues = {
+                    '沉降量 (mm)': 2.5,
+                    '水平位移 (mm)': 3,
+                    '渗流压力 (MPa)': 0.1
+                };
+                return minValues[label] || 0;
+            }
+
+            // 绑定事件
+            bindEvents() {
+                // 实时监测时间范围切换
+                const timeButtons = document.querySelectorAll('#monitor .flex.space-x-2 button');
+                timeButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        // 更新按钮样式
+                        timeButtons.forEach(btn => {
+                            btn.classList.remove('bg-blue-600', 'text-white');
+                            btn.classList.add('bg-gray-200', 'text-gray-700');
+                        });
+                        button.classList.remove('bg-gray-200', 'text-gray-700');
+                        button.classList.add('bg-blue-600', 'text-white');
+
+                        // 更新图表数据
+                        const period = button.textContent.includes('日') ? 'day' :
+                            button.textContent.includes('周') ? 'week' : 'month';
+                        this.updateRealtimeCharts(period);
+                    });
+                });
+
+                // 历史数据参数切换 - 立即响应
+                const historyParamSelect = document.getElementById('historyParamSelect');
+                historyParamSelect.addEventListener('change', () => {
+                    this.updateHistoryChart(historyParamSelect.value);
+                });
+
+                // 水位趋势时间切换
+                const waterLevelButtons = document.querySelectorAll('#todayBtn, #weekBtn, #monthBtn');
+                waterLevelButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        // 更新按钮样式
+                        waterLevelButtons.forEach(btn => {
+                            btn.classList.remove('bg-blue-600', 'text-white');
+                            btn.classList.add('bg-gray-200', 'text-gray-700');
+                        });
+                        button.classList.remove('bg-gray-200', 'text-gray-700');
+                        button.classList.add('bg-blue-600', 'text-white');
+
+                        // 更新水位图表
+                        const period = button.id === 'todayBtn' ? 'day' :
+                            button.id === 'weekBtn' ? 'week' : 'month';
+                        const labels = period === 'day' ?
+                            DataGenerator.generateLabels('day').map(hour => `${hour}`) :
+                            period === 'week' ? DataGenerator.generateLabels('week') :
+                                DataGenerator.generateLabels('month');
+
+                        this.charts.waterLevel.data.labels = labels;
+                        this.charts.waterLevel.data.datasets[0].data = DataGenerator.generateSensorData(period, 'waterLevel');
+                        this.charts.waterLevel.data.datasets[1].data = Array(labels.length).fill(2.5);
+                        this.charts.waterLevel.update();
+                    });
+                });
+            }
+        }
+
+        // 报警模态框管理
+        class AlarmModalManager {
+            constructor() {
+                this.modal = document.getElementById('alarmModal');
+                this.modalContent = document.getElementById('modalContent');
+                this.closeBtn = document.getElementById('closeModal');
+                this.cancelBtn = document.getElementById('cancelAlarm');
+                this.confirmBtn = document.getElementById('confirmAlarm');
+                this.alarmType = document.getElementById('alarmType');
+                this.sensorId = document.getElementById('sensorId');
+                this.currentValue = document.getElementById('currentValue');
+                this.thresholdValue = document.getElementById('thresholdValue');
+
+                this.alarmConfigs = {
+                    displacement: {
+                        sensor: 'D-12',
+                        value: '5.2mm/d',
+                        threshold: '5mm/d',
+                        level: 'warning-level-2',
+                        title: '水平位移超限',
+                        color: 'text-red-600'
+                    },
+                    seepage: {
+                        sensor: 'S-08',
+                        value: '0.18MPa',
+                        threshold: '0.15MPa',
+                        level: 'warning-level-1',
+                        title: '渗流压力异常',
+                        color: 'text-yellow-600'
+                    },
+                    waterlevel: {
+                        sensor: 'W-03',
+                        value: '2.52m',
+                        threshold: '2.5m',
+                        level: 'warning-level-1',
+                        title: '水位异常升高',
+                        color: 'text-yellow-600'
+                    },
+                    wind: {
+                        sensor: 'WS-01',
+                        value: '12.8m/s',
+                        threshold: '10m/s',
+                        level: 'warning-level-2',
+                        title: '风速超标',
+                        color: 'text-red-600'
+                    }
+                };
+
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                // 打开模态框
+                document.getElementById('simulateAlarm').addEventListener('click', () => this.openModal());
+
+                // 关闭模态框
+                this.closeBtn.addEventListener('click', () => this.closeModal());
+                this.cancelBtn.addEventListener('click', () => this.closeModal());
+
+                // 报警类型变更
+                this.alarmType.addEventListener('change', () => {
+                    const config = this.alarmConfigs[this.alarmType.value];
+                    if (config) {
+                        this.sensorId.value = config.sensor;
+                        this.currentValue.value = config.value;
+                        this.thresholdValue.value = config.threshold;
+                    }
+                });
+
+                // 确认报警
+                this.confirmBtn.addEventListener('click', () => this.triggerAlarm());
+            }
+
+            openModal() {
+                this.modal.classList.remove('hidden');
+                this.modal.classList.add('opacity-100');
+                setTimeout(() => {
+                    this.modalContent.classList.remove('scale-95', 'opacity-0');
+                    this.modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            closeModal() {
+                this.modalContent.classList.remove('scale-100', 'opacity-100');
+                this.modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    this.modal.classList.add('hidden');
+                    this.modal.classList.remove('opacity-100');
+                }, 300);
+            }
+
+            triggerAlarm() {
+                const config = this.alarmConfigs[this.alarmType.value];
+                if (!config) return;
+
+                // 创建新报警条目
+                const warningList = document.querySelector('.space-y-4');
+                const newAlarm = document.createElement('div');
+                newAlarm.className = `${config.level} p-4 rounded-lg transform transition-all duration-500 opacity-0 translate-y-4`;
+
+                newAlarm.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div class="font-semibold">${config.title} - 测点${this.sensorId.value}</div>
+                    <div class="${config.color} font-bold">${config.level === 'warning-level-2' ? '二级报警' : '一级预警'}</div>
+                </div>
+                <div class="text-sm text-gray-700 mt-1">当前值: ${this.currentValue.value} (阈值: ${this.thresholdValue.value})</div>
+                <div class="text-xs text-gray-500 mt-2">${new Date().toLocaleString()}</div>
+            `;
+
+                warningList.prepend(newAlarm);
+                setTimeout(() => {
+                    newAlarm.classList.remove('opacity-0', 'translate-y-4');
+                }, 10);
+
+                this.closeModal();
+            }
+        }
+
+        // 环境数据自动更新管理器
+        class EnvDataUpdater {
+            constructor(chartManager) {
+                this.chartManager = chartManager;
+                this.updateInterval = null;
+                this.startUpdates();
+            }
+
+            // 开始自动更新
+            startUpdates() {
+                // 每10秒更新一次环境数据
+                this.updateInterval = setInterval(() => {
+                    this.chartManager.updateEnvData('day');
+                }, 5000);
+            }
+
+            // 停止自动更新
+            stopUpdates() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                    this.updateInterval = null;
+                }
+            }
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            // 初始化图表管理器
+            const chartManager = new ChartManager();
+
+            // 初始化环境数据自动更新
+            const envUpdater = new EnvDataUpdater(chartManager);
+
+            // 初始化报警模态框
+            const alarmModalManager = new AlarmModalManager();
+
+            // 初始化地图
+            if (typeof AMap !== 'undefined') {
+                const wenzhouCenter = [120.65, 28.01];
+                const map = new AMap.Map('mapContainer', {
+                    zoom: 10,
+                    center: wenzhouCenter,
+                    viewMode: '3D',
+                    mapStyle: 'amap://styles/light'
+                });
+
+                const projects = [
+                    { name: '温州鹿城项目', position: [120.65, 28.01] },
+                    { name: '临海杜桥项目', position: [121.23, 28.80] },
+                    { name: '宁波象山项目', position: [121.80, 29.48] },
+                    { name: '舟山定海项目', position: [122.11, 30.01] }
+                ];
+
+                // 添加标记点到地图
+                projects.forEach(project => {
+                    const marker = new AMap.Marker({
+                        position: project.position,
+                        title: project.name,
+                        icon: new AMap.Icon({
+                            size: new AMap.Size(32, 32),
+                            image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png',
+                            imageSize: new AMap.Size(32, 32)
+                        })
+                    });
+                    marker.setMap(map);
+
+                    // 添加点击弹窗
+                    marker.on('click', function () {
+                        const infoWindow = new AMap.InfoWindow({
+                            isCustom: true,
+                            content: `<div class="p-2"><h3 class="font-bold text-lg">${project.name}</h3><p class="text-sm">点击查看项目详情</p></div>`,
+                            offset: new AMap.Pixel(0, -30)
+                        });
+                        infoWindow.open(map, marker.getPosition());
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
 </html>
