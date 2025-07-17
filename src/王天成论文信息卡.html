@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王天成 - 学术信息卡</title>
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .section-title {
+            position: relative;
+            padding-left: 1rem;
+        }
+        .section-title:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.25rem;
+            height: 1.5rem;
+            width: 0.25rem;
+            background-color: #3b82f6;
+            border-radius: 0.25rem;
+        }
+        a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+        a:hover {
+            color: #2563eb;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: #e0e7ff;
+            color: #3b82f6;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4 md:px-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-800 mb-2">王天成 (WANG Tiancheng)</h1>
+            <p class="text-lg text-gray-600">中级工程师 (Doctor, Engineer)</p>
+        </div>
+
+        <!-- 个人信息 -->
+        <div class="card p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 section-title">个人信息</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="mb-2"><span class="font-semibold">出生日期：</span>1993-09-12</p>
+                </div>
+                <div>
+                    <p class="mb-2"><span class="font-semibold">ORCID ID：</span><a href="https://orcid.org/0000-0001-6672-1482" target="_blank">https://orcid.org/0000-0001-6672-1482</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 联系方式 -->
+        <div class="card p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 section-title">联系方式</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="mb-2"><span class="font-semibold">电子邮箱：</span>522350951@qq.com</p>
+                    <p class="mb-2"><span class="font-semibold">手机号：</span>15578094345</p>
+                </div>
+                <div>
+                    <p class="mb-2"><span class="font-semibold">通讯地址：</span>湖北省武汉市江岸区长江科学院九万方基地</p>
+					<p class="mb-2"><span class="font-semibold">邮政编码：</span>430010</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 工作单位 -->
+        <div class="card p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 section-title">工作单位</h2>
+            <p class="mb-2"><span class="font-semibold">单位名称：</span>长江水利委员会长江科学院 （水利部岩土力学与工程重点实验室，武汉，430010）</p>
+            <p class="mb-2"><span class="font-semibold"></span>Key Laboratory of Geotechnical Mechanics and Engineering of Ministry of Water Resources, Changjiang River Scientific Research Institute, Wuhan, 430010, China</p>
+        </div>
+
+        <!-- 研究领域与方向 -->
+        <div class="card p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 section-title">研究领域与方向</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-blue-700">研究领域</h3>
+                <div class="flex flex-wrap">
+                    <span class="badge"><i class="fas fa-mountain mr-1"></i> 岩土地震工程</span>
+                    <span class="badge"><i class="fas fa-layer-group mr-1"></i> 地基处理</span>
+                    <span class="badge"><i class="fas fa-hill-rockslide mr-1"></i> 边坡支护工程</span>
+                    <span class="badge"><i class="fas fa-bridge mr-1"></i> 桥梁结构健康监测</span>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-semibold mb-3 text-blue-700">研究方向</h3>
+                <div class="flex flex-wrap">
+                    <span class="badge"><i class="fas fa-earthquake mr-1"></i> 岩土地震工程</span>
+                    <span class="badge"><i class="fas fa-cubes mr-1"></i> 土与结构动力相互作用</span>
+                    <span class="badge"><i class="fas fa-fill-drip mr-1"></i> 地基处理（注浆、排水固结）</span>
+                    <span class="badge"><i class="fas fa-flask mr-1"></i> 模型试验（振动台试验、边坡模型）</span>
+                    <span class="badge"><i class="fas fa-chart-line mr-1"></i> 动力响应分析（钢框架结构、拱桥结构、隧道、边坡）</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 论文引用 -->
+        <div class="card p-6">
+            <h2 class="text-xl font-bold mb-4 section-title">论文引用</h2>
+            <div class="space-y-4">
+                <div class="border-l-4 border-blue-200 pl-4 py-2" onclick="window.location.href='https://doi.org/10.1016/j.trgeo.2022.100822'">
+                    <p class="font-medium">1. Wang T, Zeng C, Ruan Z, Wu Z, Mei G. Shaking table test and numerical research on seismic response of a CFST arch bridge for different soil grounds. Transportation Geotechnics. 2022.</p>
+                </div>
+                <div class="border-l-4 border-blue-200 pl-4 py-2" onclick="window.location.href='https://doi.org/10.1061/JBENF2.BEENG-5852'">
+                    <p class="font-medium">2. Wang T, Yang J, Zhang Z, Duan Y, Mei G. Seismic Behavior of Arch Bridge Abutments under Sandy-Gravel Foundations with Different Grouting Depths: Insights from Shaking Table Tests. Journal of Bridge Engineering. 2023 Jul 1;28(7):05023003.</p>
+                </div>
+                <div class="border-l-4 border-blue-200 pl-4 py-2" onclick="window.location.href='https://link.springer.com/article/10.1007/s11709-022-0865-6'">
+                    <p class="font-medium">3. Wang T, Liang Y, Zhang X, Ruan Z, Mei G. Investigation of the seismic behavior of grouted sandy gravel foundations using shaking table tests. Frontiers of Structural and Civil Engineering. 2022 Sep;16(9):1196-211.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+
+    </div>
+</body>
+</html>
