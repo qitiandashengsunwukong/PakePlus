@@ -143,8 +143,10 @@
                 <a href="#overview" class="nav-link">系统概述</a>
                 <a href="#tech" class="nav-link">技术参数</a>
                 <a href="#monitor" class="nav-link">实时监测</a>
+                <a href="海塘监测实时大屏.html" class="nav-link">实时大屏</a>
                 <a href="#warning" class="nav-link">预警中心</a>
                 <a href="#cases" class="nav-link">应用案例</a>
+                <a href="安澜海塘登录界面.html" class="nav-link">后台管理</a>
                 <a href="#about" class="nav-link">关于我们</a>
             </div>
 
@@ -333,68 +335,71 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
 
 
-                <!-- 新增通信方式占比饼图 -->
-                <div class="glassmorphism p-8 mt-8">
+
+            <!-- 新增通信方式占比饼图 -->
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="glassmorphism p-8 flex-1">
                     <div class="flex items-center mb-6">
                         <div class="bg-green-100 p-2 rounded-full mr-3">
                             <i class="fas fa-wifi text-green-600"></i>
                         </div>
                         <h3 class="text-2xl font-semibold">5G/LoRa混合通信</h3>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow">
+
+
                         <h4 class="text-xl font-semibold mb-4 text-center">通信方式占比</h4>
                         <div class="flex justify-center">
                             <div class="w-64 h-64">
                                 <canvas id="communicationChart"></canvas>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glassmorphism p-8">
-                <h3 class="text-2xl font-semibold mb-6 flex items-center">
-                    <i class="fas fa-tachometer-alt text-blue-600 mr-2"></i> 监测指标与报警值
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h4 class="text-xl font-semibold mb-3 text-blue-700">施工期</h4>
-                        <ul class="space-y-2">
-                            <li class="flex justify-between">
-                                <span>日沉降量</span>
-                                <span class="font-bold">10 mm/d</span>
-                            </li>
-                            <li class="flex justify-between">
-                                <span>测斜量</span>
-                                <span class="font-bold">5 mm/d</span>
-                            </li>
-                            <li class="flex justify-between">
-                                <span>水平位移</span>
-                                <span class="font-bold">>50mm或连续3日>3mm/d</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-xl font-semibold mb-3 text-blue-700">运行期</h4>
-                        <ul class="space-y-2">
-                            <li class="flex justify-between">
-                                <span>沉降量</span>
-                                <span class="font-bold">2 mm/d</span>
-                            </li>
-                            <li class="flex justify-between">
-                                <span>水平位移</span>
-                                <span class="font-bold">1 mm/d</span>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
 
-                <div class="mt-8">
-                    <div class="chart-container">
-                        <canvas id="techChart"></canvas>
+                <div class="glassmorphism p-8 flex-1">
+                    <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                        <i class="fas fa-tachometer-alt text-blue-600 mr-2"></i> 监测指标与报警值
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-3 text-blue-700">施工期</h4>
+                            <ul class="space-y-2">
+                                <li class="flex justify-between">
+                                    <span>日沉降量</span>
+                                    <span class="font-bold">10 mm/d</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>测斜量</span>
+                                    <span class="font-bold">5 mm/d</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>水平位移</span>
+                                    <span class="font-bold">>50mm或连续3日>3mm/d</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-3 text-blue-700">运行期</h4>
+                            <ul class="space-y-2">
+                                <li class="flex justify-between">
+                                    <span>沉降量</span>
+                                    <span class="font-bold">2 mm/d</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span>水平位移</span>
+                                    <span class="font-bold">1 mm/d</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <div class="chart-container">
+                            <canvas id="techChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -404,7 +409,7 @@
     <!-- 实时监测 -->
     <section id="monitor" class="py-16 bg-white">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-12 text-center text-blue-800">实时监测</h2>
+            <a href="海塘监测实时大屏.html" class="block text-3xl font-bold mb-12 text-center text-blue-800 hover:text-blue-600 transition-colors">实时监测</a>
 
             <div class="glassmorphism p-8 mb-8">
                 <div class="flex justify-between items-center mb-6">
@@ -834,12 +839,12 @@
         <div class="container mx-auto px-4">
             <div class="glassmorphism p-8">
                 <h3 class="text-2xl font-semibold mb-6 flex items-center">
-                    <i class="fas fa-chart-line text-blue-600 mr-2"></i> 武汉阿里巴巴项目监测周期
+                    <i class="fas fa-chart-line text-blue-600 mr-2"></i> 项目监测周期
                 </h3>
                 <div class="mermaid mx-auto">
                     gantt
                     dateFormat YYYY-MM-DD
-                    title 武汉阿里巴巴项目监测周期
+                    title 项目监测周期
                     axisFormat %Y-%m-%d
 
                     section 基坑施工
